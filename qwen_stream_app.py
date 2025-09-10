@@ -6,6 +6,8 @@ import os
 import json
 import time
 import asyncio
+from datetime import datetime, timedelta
+from collections import defaultdict, Counter
 from typing import List, Dict, Any, AsyncGenerator
 from fastapi import FastAPI, Request, Body, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse, StreamingResponse
@@ -38,6 +40,48 @@ app.add_middleware(
 
 # 创建通义千问实例
 qwen_llm = QwenStreamLLM()
+
+# ==================== 访问统计功能 ====================
+# 全局统计变量
+access_stats = {
+    "total_visits": 0,
+    "daily_visits": defaultdict(int),
+    "hourly_visits": defaultdict(int),
+    "unique_ips": set(),
+    "endpoint_stats": defaultdict(int),
+    "user_agents": Counter(),
+    "last_reset": datetime.now().date()
+}
+
+def record_visit(request: Request, endpoint: str = ""):
+    """记录访问统计"""
+    global access_stats
+    
+    # 获取客户端IP
+    client_ip = request.client.host
+    if hasattr(request, 'headers') and 'x-forwarded-for' in request.headers:
+        client_ip = request.headers['x-forwarded-for'].split(',')[0].strip()
+    
+    # 获取User-Agent
+    user_agent = request.headers.get('user-agent', 'Unknown')
+    
+    # 记录统计
+    access_stats["total_visits"] += 1
+    access_stats["daily_visits"][datetime.now().date()] += 1
+    access_stats["hourly_visits"][datetime.now().hour] += 1
+    access_stats["unique_ips"].add(client_ip)
+    access_stats["endpoint_stats"][endpoint] += 1
+    access_stats["user_agents"][user_agent] += 1
+    
+    # 清理旧数据（保留最近30天）
+    cutoff_date = datetime.now().date() - timedelta(days=30)
+    access_stats["daily_visits"] = {
+        d: v for d, v in access_stats["daily_visits"].items() 
+        if d >= cutoff_date
+    }
+    
+    # 打印访问日志
+    print(f"📊 访问统计: {endpoint} | IP: {client_ip} | 总访问: {access_stats['total_visits']}")
 
 # 加载知识库
 def load_knowledge_base(file_path: str = "data/knowledge_base.json") -> Dict:
@@ -395,19 +439,22 @@ class ConnectionManager:
 manager = ConnectionManager()
 
 @app.get("/")
-async def root():
+async def root(request: Request):
     """根路径"""
+    record_visit(request, "/")
     return {
         "message": "🏥 医疗报销智能助手运行中！",
         "status": "ok",
         "version": "1.0.0",
         "web_interface": "/web",
-        "api_docs": "/docs"
+        "api_docs": "/docs",
+        "stats": f"总访问量: {access_stats['total_visits']}"
     }
 
 @app.get("/health")
-async def health():
+async def health(request: Request):
     """健康检查"""
+    record_visit(request, "/health")
     # 检查通义千问API
     qwen_status = qwen_llm.health_check()
     
@@ -416,6 +463,52 @@ async def health():
         "version": "1.0.0",
         "qwen_api": qwen_status,
         "knowledge_items": sum(len(items) for items in knowledge_base.get("knowledge_base", {}).values())
+    }
+
+@app.get("/stats")
+async def get_stats(request: Request):
+    """获取访问统计"""
+    global access_stats
+    
+    # 记录统计访问
+    record_visit(request, "/stats")
+    
+    # 计算今日访问量
+    today = datetime.now().date()
+    today_visits = access_stats["daily_visits"].get(today, 0)
+    
+    # 计算昨日访问量
+    yesterday = today - timedelta(days=1)
+    yesterday_visits = access_stats["daily_visits"].get(yesterday, 0)
+    
+    # 计算本周访问量
+    week_start = today - timedelta(days=today.weekday())
+    week_visits = sum(
+        v for d, v in access_stats["daily_visits"].items() 
+        if d >= week_start
+    )
+    
+    # 计算最活跃的小时
+    most_active_hour = max(access_stats["hourly_visits"].items(), key=lambda x: x[1]) if access_stats["hourly_visits"] else (0, 0)
+    
+    # 计算最受欢迎的端点
+    most_popular_endpoint = max(access_stats["endpoint_stats"].items(), key=lambda x: x[1]) if access_stats["endpoint_stats"] else ("", 0)
+    
+    return {
+        "total_visits": access_stats["total_visits"],
+        "unique_visitors": len(access_stats["unique_ips"]),
+        "today_visits": today_visits,
+        "yesterday_visits": yesterday_visits,
+        "week_visits": week_visits,
+        "most_active_hour": f"{most_active_hour[0]}:00-{most_active_hour[0]+1}:00",
+        "most_popular_endpoint": most_popular_endpoint[0],
+        "endpoint_stats": dict(access_stats["endpoint_stats"]),
+        "daily_visits_last_7_days": {
+            str(d): v for d, v in sorted(access_stats["daily_visits"].items())[-7:]
+        },
+        "hourly_distribution": dict(access_stats["hourly_visits"]),
+        "top_user_agents": dict(access_stats["user_agents"].most_common(5)),
+        "last_updated": datetime.now().isoformat()
     }
 
 @app.websocket("/ws")
@@ -598,8 +691,9 @@ async def websocket_endpoint(websocket: WebSocket):
         manager.disconnect(websocket)
 
 @app.get("/web", response_class=HTMLResponse)
-async def web_interface():
+async def web_interface(request: Request):
     """Web界面 - 支持Markdown渲染和流式输出"""
+    record_visit(request, "/web")
     return """
     <!DOCTYPE html>
     <html lang="zh-CN">
