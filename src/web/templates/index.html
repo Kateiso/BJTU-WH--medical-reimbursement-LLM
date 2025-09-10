@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>医疗报销智能助手</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+        
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 400px;
+        }
+        
+        .messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            max-height: 400px;
+        }
+        
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-start;
+        }
+        
+        .message.user {
+            justify-content: flex-end;
+        }
+        
+        .message-content {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            word-wrap: break-word;
+        }
+        
+        .message.user .message-content {
+            background: #007bff;
+            color: white;
+            border-bottom-right-radius: 5px;
+        }
+        
+        .message.assistant .message-content {
+            background: #f8f9fa;
+            color: #333;
+            border: 1px solid #e9ecef;
+            border-bottom-left-radius: 5px;
+        }
+        
+        .message-time {
+            font-size: 11px;
+            opacity: 0.7;
+            margin-top: 5px;
+        }
+        
+        .sources {
+            margin-top: 10px;
+            padding: 10px;
+            background: #e3f2fd;
+            border-radius: 8px;
+            font-size: 12px;
+        }
+        
+        .sources h4 {
+            margin-bottom: 5px;
+            color: #1976d2;
+        }
+        
+        .source-item {
+            margin: 3px 0;
+            padding: 3px 6px;
+            background: white;
+            border-radius: 4px;
+            border-left: 3px solid #2196f3;
+        }
+        
+        .input-container {
+            padding: 20px;
+            border-top: 1px solid #e9ecef;
+            background: #f8f9fa;
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .input-field {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 25px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        
+        .input-field:focus {
+            border-color: #007bff;
+        }
+        
+        .send-button {
+            padding: 12px 24px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.3s;
+        }
+        
+        .send-button:hover:not(:disabled) {
+            background: #0056b3;
+        }
+        
+        .send-button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #6c757d;
+        }
+        
+        .loading.show {
+            display: block;
+        }
+        
+        .typing-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: #007bff;
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+        
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        
+        @keyframes typing {
+            0%, 60%, 100% {
+                transform: translateY(0);
+            }
+            30% {
+                transform: translateY(-10px);
+            }
+        }
+        
+        .quick-questions {
+            padding: 15px 20px;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        .quick-questions h4 {
+            margin-bottom: 10px;
+            color: #495057;
+            font-size: 14px;
+        }
+        
+        .quick-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .quick-button {
+            padding: 6px 12px;
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 12px;
+            color: #495057;
+            transition: all 0.3s;
+        }
+        
+        .quick-button:hover {
+            background: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                width: 95%;
+                margin: 10px;
+            }
+            
+            .message-content {
+                max-width: 85%;
+            }
+            
+            .input-group {
+                flex-direction: column;
+            }
+            
+            .send-button {
+                align-self: flex-end;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏥 医疗报销智能助手</h1>
+            <p>北京交通大学威海校区 | 7x24小时智能咨询服务</p>
+        </div>
+        
+        <div class="chat-container">
+            <div class="messages" id="messages">
+                <div class="message assistant">
+                    <div class="message-content">
+                        <div>👋 您好！我是医疗报销智能助手，可以为您解答关于医疗费用报销的各种问题。</div>
+                        <div class="message-time" id="welcome-time"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="loading" id="loading">
+                <div class="typing-indicator">
+                    <span>AI正在思考</span>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="quick-questions">
+            <h4>💡 常见问题</h4>
+            <div class="quick-buttons">
+                <button class="quick-button" onclick="askQuestion('感冒药能报销吗？')">感冒药能报销吗？</button>
+                <button class="quick-button" onclick="askQuestion('住院需要什么材料？')">住院需要什么材料？</button>
+                <button class="quick-button" onclick="askQuestion('报销找哪个老师？')">报销找哪个老师？</button>
+                <button class="quick-button" onclick="askQuestion('威海市中心医院地址在哪？')">威海市中心医院地址在哪？</button>
+            </div>
+        </div>
+        
+        <div class="input-container">
+            <div class="input-group">
+                <input 
+                    type="text" 
+                    class="input-field" 
+                    id="questionInput" 
+                    placeholder="请输入您的问题..."
+                    maxlength="500"
+                >
+                <button class="send-button" id="sendButton" onclick="sendMessage()">
+                    发送
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let sessionId = null;
+        
+        // 设置欢迎时间
+        document.getElementById('welcome-time').textContent = new Date().toLocaleTimeString();
+        
+        // 回车发送消息
+        document.getElementById('questionInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+        
+        // 快速提问
+        function askQuestion(question) {
+            document.getElementById('questionInput').value = question;
+            sendMessage();
+        }
+        
+        // 发送消息
+        async function sendMessage() {
+            const input = document.getElementById('questionInput');
+            const question = input.value.trim();
+            
+            if (!question) return;
+            
+            // 清空输入框
+            input.value = '';
+            
+            // 添加用户消息
+            addMessage(question, 'user');
+            
+            // 显示加载状态
+            showLoading(true);
+            
+            try {
+                const response = await fetch('/api/v1/ask', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        question: question,
+                        session_id: sessionId
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                // 保存会话ID
+                if (!sessionId) {
+                    sessionId = data.session_id;
+                }
+                
+                // 添加AI回答
+                addMessage(data.answer, 'assistant', data.sources, data.response_time);
+                
+            } catch (error) {
+                console.error('Error:', error);
+                addMessage('抱歉，服务暂时不可用，请稍后再试。', 'assistant');
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        // 添加消息到聊天界面
+        function addMessage(content, type, sources = null, responseTime = null) {
+            const messagesContainer = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            
+            let messageContent = `<div class="message-content">${content}</div>`;
+            
+            if (sources && sources.length > 0) {
+                messageContent += `<div class="sources">
+                    <h4>📚 信息来源</h4>
+                    ${sources.map(source => 
+                        `<div class="source-item">${source.title} (${source.category})</div>`
+                    ).join('')}
+                </div>`;
+            }
+            
+            const timeText = responseTime ? 
+                `响应时间: ${responseTime.toFixed(2)}秒 | ${new Date().toLocaleTimeString()}` : 
+                new Date().toLocaleTimeString();
+            
+            messageContent += `<div class="message-time">${timeText}</div>`;
+            
+            messageDiv.innerHTML = messageContent;
+            messagesContainer.appendChild(messageDiv);
+            
+            // 滚动到底部
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        // 显示/隐藏加载状态
+        function showLoading(show) {
+            const loading = document.getElementById('loading');
+            const sendButton = document.getElementById('sendButton');
+            
+            if (show) {
+                loading.classList.add('show');
+                sendButton.disabled = true;
+                sendButton.textContent = '发送中...';
+            } else {
+                loading.classList.remove('show');
+                sendButton.disabled = false;
+                sendButton.textContent = '发送';
+            }
+        }
+        
+        // 页面加载完成后聚焦输入框
+        window.addEventListener('load', function() {
+            document.getElementById('questionInput').focus();
+        });
+    </script>
+</body>
+</html>
