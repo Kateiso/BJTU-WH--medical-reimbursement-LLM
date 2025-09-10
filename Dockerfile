@@ -18,9 +18,8 @@ RUN pip install --no-cache-dir -r /app/requirements.txt
 # App code
 COPY . /app
 
-# Expose port
-ENV PORT=8081
-EXPOSE 8081
+# Expose port (PaaS will set PORT dynamically)
+EXPOSE 8080
 
-# Start
-CMD ["python", "qwen_stream_app.py"]
+# Start with dynamic port
+CMD ["sh", "-c", "python qwen_stream_app.py"]
