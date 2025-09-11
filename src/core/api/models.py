@@ -39,6 +39,33 @@ class KnowledgeSearchResponse(BaseModel):
     query: str = Field(..., description="搜索查询")
     search_time: float = Field(..., description="搜索时间(秒)")
 
+class KnowledgeItemRequest(BaseModel):
+    """知识项请求模型"""
+    category: str = Field(..., description="分类", min_length=1, max_length=50)
+    title: str = Field(..., description="标题", min_length=1, max_length=200)
+    content: str = Field(..., description="内容", min_length=1, max_length=5000)
+    tags: List[str] = Field(default=[], description="标签列表")
+    metadata: Dict[str, Any] = Field(default={}, description="元数据")
+
+class KnowledgeItemResponse(BaseModel):
+    """知识项响应模型"""
+    id: str = Field(..., description="条目ID")
+    category: str = Field(..., description="分类")
+    title: str = Field(..., description="标题")
+    content: str = Field(..., description="内容")
+    tags: List[str] = Field(..., description="标签列表")
+    metadata: Dict[str, Any] = Field(..., description="元数据")
+    created_at: Optional[str] = Field(None, description="创建时间")
+    updated_at: Optional[str] = Field(None, description="更新时间")
+
+class KnowledgeItemUpdateRequest(BaseModel):
+    """知识项更新请求模型"""
+    category: Optional[str] = Field(None, description="分类", max_length=50)
+    title: Optional[str] = Field(None, description="标题", max_length=200)
+    content: Optional[str] = Field(None, description="内容", max_length=5000)
+    tags: Optional[List[str]] = Field(None, description="标签列表")
+    metadata: Optional[Dict[str, Any]] = Field(None, description="元数据")
+
 class ErrorResponse(BaseModel):
     """错误响应模型"""
     error: str = Field(..., description="错误信息")

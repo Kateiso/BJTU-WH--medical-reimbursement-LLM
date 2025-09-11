@@ -9,7 +9,8 @@ from fastapi.responses import HTMLResponse
 
 from .models import (
     QuestionRequest, AnswerResponse, HealthResponse,
-    KnowledgeSearchRequest, KnowledgeSearchResponse, ErrorResponse
+    KnowledgeSearchRequest, KnowledgeSearchResponse, ErrorResponse,
+    KnowledgeItemRequest, KnowledgeItemResponse, KnowledgeItemUpdateRequest
 )
 from ..rag.qwen_engine import QwenRAGEngine
 from ..knowledge.json_manager import JSONKnowledgeManager
@@ -225,6 +226,182 @@ async def get_stats(
             detail=f"获取统计信息失败: {str(e)}"
         )
 
+# ==================== 知识库管理接口 ====================
+
+@router.post("/knowledge", response_model=KnowledgeItemResponse)
+async def create_knowledge_item(
+    request: KnowledgeItemRequest,
+    knowledge_manager: JSONKnowledgeManager = Depends(get_knowledge_manager)
+):
+    """创建新的知识库条目"""
+    try:
+        from ..knowledge.base import KnowledgeItem
+        
+        # 创建知识项
+        item = KnowledgeItem(
+            category=request.category,
+            title=request.title,
+            content=request.content,
+            tags=request.tags,
+            metadata=request.metadata
+        )
+        
+        # 添加到知识库
+        success = await knowledge_manager.add_item(item)
+        if not success:
+            raise HTTPException(status_code=500, detail="创建条目失败")
+        
+        return KnowledgeItemResponse(
+            id=item.id,
+            category=item.category,
+            title=item.title,
+            content=item.content,
+            tags=item.tags,
+            metadata=item.metadata,
+            created_at=item.created_at,
+            updated_at=item.updated_at
+        )
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"创建知识条目失败: {str(e)}"
+        )
+
+@router.get("/knowledge/{item_id}", response_model=KnowledgeItemResponse)
+async def get_knowledge_item(
+    item_id: str,
+    knowledge_manager: JSONKnowledgeManager = Depends(get_knowledge_manager)
+):
+    """根据ID获取知识库条目"""
+    try:
+        item = await knowledge_manager.get_by_id(item_id)
+        if not item:
+            raise HTTPException(status_code=404, detail="条目不存在")
+        
+        return KnowledgeItemResponse(
+            id=item.id,
+            category=item.category,
+            title=item.title,
+            content=item.content,
+            tags=item.tags,
+            metadata=item.metadata,
+            created_at=item.created_at,
+            updated_at=item.updated_at
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"获取知识条目失败: {str(e)}"
+        )
+
+@router.put("/knowledge/{item_id}", response_model=KnowledgeItemResponse)
+async def update_knowledge_item(
+    item_id: str,
+    request: KnowledgeItemUpdateRequest,
+    knowledge_manager: JSONKnowledgeManager = Depends(get_knowledge_manager)
+):
+    """更新知识库条目"""
+    try:
+        # 获取现有条目
+        item = await knowledge_manager.get_by_id(item_id)
+        if not item:
+            raise HTTPException(status_code=404, detail="条目不存在")
+        
+        # 更新字段
+        if request.category is not None:
+            item.category = request.category
+        if request.title is not None:
+            item.title = request.title
+        if request.content is not None:
+            item.content = request.content
+        if request.tags is not None:
+            item.tags = request.tags
+        if request.metadata is not None:
+            item.metadata.update(request.metadata)
+        
+        # 保存更新
+        success = await knowledge_manager.update_item(item)
+        if not success:
+            raise HTTPException(status_code=500, detail="更新条目失败")
+        
+        return KnowledgeItemResponse(
+            id=item.id,
+            category=item.category,
+            title=item.title,
+            content=item.content,
+            tags=item.tags,
+            metadata=item.metadata,
+            created_at=item.created_at,
+            updated_at=item.updated_at
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"更新知识条目失败: {str(e)}"
+        )
+
+@router.delete("/knowledge/{item_id}")
+async def delete_knowledge_item(
+    item_id: str,
+    knowledge_manager: JSONKnowledgeManager = Depends(get_knowledge_manager)
+):
+    """删除知识库条目"""
+    try:
+        success = await knowledge_manager.delete_item(item_id)
+        if not success:
+            raise HTTPException(status_code=404, detail="条目不存在")
+        
+        return {"message": "条目删除成功", "item_id": item_id}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"删除知识条目失败: {str(e)}"
+        )
+
+@router.get("/knowledge/category/{category}")
+async def get_knowledge_by_category(
+    category: str,
+    knowledge_manager: JSONKnowledgeManager = Depends(get_knowledge_manager)
+):
+    """根据分类获取知识库条目"""
+    try:
+        items = await knowledge_manager.get_by_category(category)
+        
+        results = []
+        for item in items:
+            results.append({
+                "id": item.id,
+                "title": item.title,
+                "content": item.content,
+                "category": item.category,
+                "tags": item.tags,
+                "metadata": item.metadata,
+                "created_at": item.created_at,
+                "updated_at": item.updated_at
+            })
+        
+        return {
+            "category": category,
+            "items": results,
+            "total_count": len(results)
+        }
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"获取分类条目失败: {str(e)}"
+        )
+
 @router.get("/", response_class=HTMLResponse)
 async def root():
     """根路径 - 返回简单的API文档"""
@@ -265,6 +442,28 @@ async def root():
         
         <div class="endpoint">
             <span class="method">GET</span> /api/v1/stats - 获取统计
+        </div>
+        
+        <h2>知识库管理</h2>
+        
+        <div class="endpoint">
+            <span class="method">POST</span> /api/v1/knowledge - 创建知识条目
+        </div>
+        
+        <div class="endpoint">
+            <span class="method">GET</span> /api/v1/knowledge/{id} - 获取知识条目
+        </div>
+        
+        <div class="endpoint">
+            <span class="method">PUT</span> /api/v1/knowledge/{id} - 更新知识条目
+        </div>
+        
+        <div class="endpoint">
+            <span class="method">DELETE</span> /api/v1/knowledge/{id} - 删除知识条目
+        </div>
+        
+        <div class="endpoint">
+            <span class="method">GET</span> /api/v1/knowledge/category/{category} - 按分类获取条目
         </div>
         
         <h2>快速测试</h2>
