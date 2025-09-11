@@ -1,6 +1,13 @@
-# 🏥 医疗报销智能助手
+# 🏥 医疗报销智能助手 → 🎓 校园智能助手
 
-基于RAG技术的智能医疗报销问答系统，为北京交通大学威海校区师生提供7x24小时专业咨询服务。
+基于RAG技术的智能问答系统，从医疗报销垂直领域起步，逐步扩展为全方位的校园生活智能助手。
+
+## 🎯 项目愿景
+
+**阶段1**: 医疗报销专业助手 ✅  
+**阶段2**: 校园办事流程助手 🚧  
+**阶段3**: 课程学习指南助手 📋  
+**阶段4**: 通用校园生活助手 🌟
 
 ## ✨ 核心特性
 
@@ -138,21 +145,111 @@ python -m pytest tests/test_api.py -v
 - **准确率**: > 90%
 - **可用性**: > 99%
 
-## 🔮 扩展规划
+## 🚀 战略发展规划
 
-### 短期优化
-- [ ] 向量数据库集成
-- [ ] 多模态交互支持
-- [ ] 用户会话管理
-- [ ] 数据分析面板
+### 阶段1: 医疗报销助手 ✅ (已完成)
+- ✅ 报销政策问答
+- ✅ 材料要求查询
+- ✅ 流程指导
+- ✅ 联系人信息
 
-### 长期规划
-- [ ] 微服务架构
-- [ ] 移动端APP
-- [ ] 多校扩展
-- [ ] 智能推荐系统
+### 阶段2: 校园办事助手 🚧 (进行中)
+- [ ] 学籍管理流程
+- [ ] 宿舍申请指导
+- [ ] 成绩查询帮助
+- [ ] 证明开具流程
+
+### 阶段3: 课程学习助手 📋 (规划中)
+- [ ] 选课指导系统
+- [ ] 考试安排查询
+- [ ] 课程评价分析
+- [ ] 学习资源推荐
+
+### 阶段4: 通用校园助手 🌟 (愿景)
+- [ ] 校园生活百科
+- [ ] 就业指导服务
+- [ ] 社团活动推荐
+- [ ] 综合智能助手
+
+## 🔧 技术架构升级
+
+### 当前架构
+- ✅ FastAPI + 通义千问 + JSON知识库
+- ✅ WebSocket实时通信
+- ✅ 访问统计分析
+
+### 计划升级
+- [ ] **安全加固**: API密钥管理、输入验证、访问控制
+- [ ] **数据管理**: 新知识库API系统、批量导入工具
+- [ ] **备案合规**: 工信部备案、内容审核机制
+- [ ] **性能优化**: 向量数据库、缓存系统、负载均衡
+
+## 📋 当前任务清单
+
+### 🔥 高优先级
+- [ ] **安全改进**: 移除硬编码API密钥，添加环境变量管理
+- [ ] **备案申请**: 向工信部提交网站备案申请
+- [ ] **项目重命名**: 从"医疗AI"升级为"校园智能助手"
+- [ ] **域名规划**: 考虑更通用的域名方案
+
+### 📊 中优先级
+- [ ] **知识库扩展**: 添加学籍、宿舍、成绩等新领域数据
+- [ ] **API完善**: 实现完整的CRUD知识库管理接口
+- [ ] **用户系统**: 添加用户认证和权限管理
+- [ ] **数据分析**: 扩展访问统计和用户行为分析
+
+### 🎯 低优先级
+- [ ] **移动端**: 开发微信小程序或APP
+- [ ] **多校扩展**: 支持其他高校的定制化需求
+- [ ] **AI升级**: 集成更多大语言模型
+- [ ] **国际化**: 支持多语言界面
 
 ## 🛠️ 开发指南
+
+### 新知识库管理系统
+
+项目已集成完整的知识库管理API，支持程序化添加和管理：
+
+```python
+# 1. API方式添加知识条目
+import requests
+
+url = "http://localhost:8080/api/v1/knowledge"
+data = {
+    "category": "policy",
+    "title": "新政策标题",
+    "content": "政策详细内容...",
+    "tags": ["标签1", "标签2"],
+    "metadata": {"priority": "high"}
+}
+response = requests.post(url, json=data)
+```
+
+```bash
+# 2. 命令行方式管理
+python scripts/manage_knowledge.py add --category policy --title "新政策"
+python scripts/manage_knowledge.py list --category policy
+python scripts/manage_knowledge.py search "关键词"
+```
+
+### 扩展新领域知识
+
+```python
+# 添加学籍管理知识
+from src.core.knowledge.json_manager import JSONKnowledgeManager
+
+manager = JSONKnowledgeManager()
+await manager.load()
+
+# 添加学籍相关条目
+new_item = KnowledgeItem(
+    category="academic",  # 新分类
+    title="学籍证明开具流程",
+    content="详细流程说明...",
+    tags=["学籍", "证明", "流程"]
+)
+await manager.add_item(new_item)
+```
 
 ### 添加新的RAG引擎
 
@@ -165,22 +262,25 @@ class CustomRAGEngine(RAGEngine):
         pass
 ```
 
-### 添加新的知识库源
+## 📊 项目状态
 
-```python
-from src.core.knowledge.base import KnowledgeBase
+### 当前版本: v1.0.0
+- ✅ **核心功能**: 医疗报销智能问答
+- ✅ **部署状态**: Railway云端部署
+- ✅ **访问统计**: 实时用户访问分析
+- ✅ **知识库**: 33条专业报销知识
 
-class CustomKnowledgeBase(KnowledgeBase):
-    async def load(self):
-        # 实现自定义加载逻辑
-        pass
-```
+### 访问地址
+- **生产环境**: https://www.bjtuai.cn
+- **备用地址**: https://bjtu-wh-medical-reimbursement-llm-production.up.railway.app
+- **统计面板**: https://www.bjtuai.cn/stats
 
 ## 📞 技术支持
 
 - **项目负责人**: 曹益波
 - **技术栈**: Python + FastAPI + 通义千问 + RAG
 - **问题反馈**: 通过Web界面或API接口
+- **开发文档**: 详见 `docs/` 目录
 
 ## 📄 许可证
 
@@ -188,6 +288,8 @@ MIT License
 
 ---
 
-**🎯 产品使命**: 让医疗报销咨询变得简单、准确、高效
+**🎯 产品使命**: 从医疗报销起步，打造全方位的校园智能助手
+
+**🌟 发展愿景**: 让校园生活咨询变得简单、准确、高效
 
 *Built with ❤️ using 阿里通义千问 RAG技术*
