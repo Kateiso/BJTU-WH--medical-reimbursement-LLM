@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 from collections import defaultdict, Counter
 from typing import List, Dict, Any, AsyncGenerator
 from fastapi import FastAPI, Request, Body, WebSocket, WebSocketDisconnect
-from fastapi.responses import HTMLResponse, StreamingResponse
+from fastapi.responses import HTMLResponse, StreamingResponse, RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 from pathlib import Path
@@ -444,16 +444,9 @@ manager = ConnectionManager()
 
 @app.get("/")
 async def root(request: Request):
-    """根路径"""
+    """根路径 - 自动重定向到Web界面"""
     record_visit(request, "/")
-    return {
-        "message": "🏥 医疗报销智能助手运行中！",
-        "status": "ok",
-        "version": "1.0.0",
-        "web_interface": "/web",
-        "api_docs": "/docs",
-        "stats": f"总访问量: {access_stats['total_visits']}"
-    }
+    return RedirectResponse(url="/web", status_code=302)
 
 @app.get("/health")
 async def health(request: Request):
