@@ -1,0 +1,66 @@
+# 职业规划与升学指导知识库
+- id: "career_001"
+  title: "保研/考研/留学决策框架"
+  content: "优先自问5题：1) 经济承受力（学费+生活费）；2) 准备与等待周期能否接受（申请、材料、出国前事务）；3) 文化适应度与成长空间；4) 职业长期收益（认可度、毕业周期、当地求职/国企要求等）；5) 国际环境不确定性容忍度（如签证）。做法：收集一手信息（项目官网、校友），对比成本—收益；二手信息（知乎/小红书/一亩三分地/SJTU生存手册/专业社群）仅作参考，结合自身软硬件条件校准。"
+  category: "career_planning"
+  tags: ["保研", "考研", "留学", "决策框架", "成本收益"]
+  keywords: ["保研", "考研", "留学", "决策", "选择", "成本", "收益"]
+  metadata:
+    type: "guide"
+    priority: "high"
+    source: "飞跃手册 25fall-CS-杨柏翰"
+
+- id: "career_002"
+  title: "CS方向选择与组合"
+  content: "评估三要素：1) 学习难度与周期（达成目标所需时间）；2) 项目获取便捷度（实习/科研/自建途径）；3) 与职业路径的直接相关度。建议用组合拳：如Software+Web+Cloud+Mobile，或AI+Robotics/AI+Security，形成可讲述的跨域故事线。"
+  category: "career_planning"
+  tags: ["方向选择", "职业路径", "交叉能力", "AI", "软件开发"]
+  keywords: ["CS方向", "职业路径", "AI", "软件开发", "Web", "Cloud", "Mobile"]
+  metadata:
+    type: "framework"
+    priority: "high"
+    source: "飞跃手册 25fall-CS-杨柏翰"
+
+- id: "career_003"
+  title: "科研的定位与价值"
+  content: "科研=学术职业路径的实习。对升研有正向作用；若职业目标非学术，收益相对有限。质量评价：中稿是成果，但即便未投中，若工作有见解/可展示也具价值（如做实验平台对外呈现）。选择有趣的科研更易获导师认可。"
+  category: "career_planning"
+  tags: ["科研入门", "成果导向", "升研", "导师期望"]
+  keywords: ["科研", "学术", "升研", "导师", "成果", "论文"]
+  metadata:
+    type: "concept"
+    priority: "high"
+    source: "飞跃手册 25fall-CS-杨柏翰"
+
+- id: "career_004"
+  title: "科研机会获取路径"
+  content: "威海校区课题资源较少→先完成1~2个由本校老师指导的大创/竞赛/独立项目，形成可见成果；再联系北交北京校区或外校导师（个人主页/教师主页通常列明要求与邮箱）。准备材料：项目摘要、代码/演示、个人简历。"
+  category: "career_planning"
+  tags: ["科研机会", "套磁", "大创", "导师联系"]
+  keywords: ["科研机会", "导师联系", "大创", "竞赛", "项目", "套磁"]
+  metadata:
+    type: "guide"
+    priority: "high"
+    source: "飞跃手册 25fall-CS-杨柏翰"
+
+- id: "career_005"
+  title: "学术型升学项目定位"
+  content: "若以学术为长期职业目标：本科阶段应积累多项科研并争取出版物与高质量connection；优先关注研究型项目：国内学硕/直博，海外PhD、MPhil(HK)、MRes(UK)。"
+  category: "career_planning"
+  tags: ["学术路线", "PhD", "MPhil", "MRes", "直博"]
+  keywords: ["学术路线", "PhD", "MPhil", "MRes", "直博", "学硕"]
+  metadata:
+    type: "strategy"
+    priority: "medium"
+    source: "飞跃手册 25fall-CS-杨柏翰"
+
+- id: "career_006"
+  title: "申请材料四件套清单"
+  content: "1) 成绩单：保研重均分/专业排名；海外申请重视成绩但不纠结细枝末节。WES评估流程复杂且耗时，若需提交应尽早准备；如需兰卡成绩单，可经LU Alumni Document Ordering渠道（邮件说明目的）。2) 英语成绩：国内保研一般接受CET-6/IELTS/TOEFL之一；英港新偏IELTS，美国多校IELTS/TOEFL皆可（如Stanford仅TOEFL）；Duolingo虽被部分院校接受，但与IELTS/TOEFL差异大，谨慎。3) GRE/GMAT：非英语水平测试，需额外准备（约半年）。4) 科研/实习经历与推荐信：优先请熟悉你学术/项目的老师撰写，体现具体合作细节与connection。"
+  category: "career_planning"
+  tags: ["成绩单", "WES", "IELTS", "TOEFL", "推荐信"]
+  keywords: ["申请材料", "成绩单", "IELTS", "TOEFL", "GRE", "推荐信", "WES"]
+  metadata:
+    type: "checklist"
+    priority: "high"
+    source: "飞跃手册 25fall-CS-杨柏翰"

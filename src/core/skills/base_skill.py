@@ -123,9 +123,9 @@ class BaseSkill(ABC):
             'materials': ['reimbursement', 'materials', 'requirements', 'checklist'],
             'contacts': ['teachers', 'contacts', 'departments'],
             'policies': ['policies', 'regulations', 'rules'],
-            'enrollment': ['enrollment', 'registration', 'courses'],
-            'grades': ['grades', 'scores', 'gpa'],
-            'exams': ['exams', 'tests', 'schedules']
+            'enrollment': ['enrollment', 'registration', 'courses', 'career_planning', 'study_resources'],
+            'grades': ['grades', 'scores', 'gpa', 'career_planning', 'study_resources'],
+            'exams': ['exams', 'tests', 'schedules', 'career_planning', 'study_resources']
         }
         
         categories = set()
@@ -215,6 +215,21 @@ class BaseSkill(ABC):
         dept = item.get('dept', '')
         if dept and dept.lower() in query_lower:
             score += 1.5
+        
+        # 特殊匹配逻辑 - 学习指导相关
+        if any(word in query_lower for word in ['学习', '指导', '规划', '发展', '方向', '选择']):
+            if any(word in content for word in ['学习', '指导', '规划', '发展', '方向', '选择']):
+                score += 1.0
+        
+        # 特殊匹配逻辑 - 升学相关
+        if any(word in query_lower for word in ['保研', '考研', '留学', '申请', '升学']):
+            if any(word in content for word in ['保研', '考研', '留学', '申请', '升学']):
+                score += 1.0
+        
+        # 特殊匹配逻辑 - 专业相关
+        if any(word in query_lower for word in ['CS', '计算机', '专业', '方向', 'AI', '软件']):
+            if any(word in content for word in ['CS', '计算机', '专业', '方向', 'AI', '软件']):
+                score += 1.0
         
         return score
     

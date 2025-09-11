@@ -1,0 +1,11 @@
+# 网络资源与联系信息知识库
+- id: "network_001"
+  title: "作者联系渠道（校友）"
+  content: "用途：求证一手经验、交流项目/申请细节。联系：微信 White-YC（若变更请用邮箱）、邮箱 whiteyc@163.com（preferred）、21722070@bjtu.edu.cn。初次联系请备注 学校+班级+姓名。"
+  category: "networking"
+  tags: ["校友网络", "联系方式", "经验交流"]
+  keywords: ["校友", "联系方式", "经验交流", "微信", "邮箱"]
+  metadata:
+    type: "contact"
+    priority: "low"
+    source: "飞跃手册 25fall-CS-杨柏翰"

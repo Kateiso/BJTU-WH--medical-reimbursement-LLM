@@ -19,6 +19,7 @@ from pathlib import Path
 from src.core.router.intent_router import IntentRouter, SkillType, route_query
 from src.core.skills.process_skill import ProcessSkill
 from src.core.skills.contact_skill import ContactSkill
+from src.core.skills.course_skill import CourseSkill
 from src.core.rag.qwen_stream_integration import QwenStreamLLM
 
 # 创建应用
@@ -45,7 +46,8 @@ qwen_llm = QwenStreamLLM()
 skills = {
     SkillType.PROCESS: ProcessSkill(),
     SkillType.CONTACT: ContactSkill(),
-    # TODO: 后续添加 CourseSkill, PolicySkill
+    SkillType.COURSE: CourseSkill(),
+    # TODO: 后续添加 PolicySkill
 }
 
 # ==================== 访问统计功能 ====================
@@ -576,7 +578,9 @@ async def ask_interface(request: Request):
                 <div class="quick-buttons">
                     <button class="quick-button" onclick="askQuestion('感冒药能报销吗？')">医疗报销</button>
                     <button class="quick-button" onclick="askQuestion('常春艳老师联系方式？')">联系人查询</button>
-                    <button class="quick-button" onclick="askQuestion('报销需要什么材料？')">办事流程</button>
+                    <button class="quick-button" onclick="askQuestion('保研考研留学怎么选择？')">升学规划</button>
+                    <button class="quick-button" onclick="askQuestion('CS专业有哪些发展方向？')">专业指导</button>
+                    <button class="quick-button" onclick="askQuestion('如何开始科研项目？')">科研指导</button>
                     <button class="quick-button" onclick="askQuestion('你好，小助')">问候测试</button>
                 </div>
             </div>

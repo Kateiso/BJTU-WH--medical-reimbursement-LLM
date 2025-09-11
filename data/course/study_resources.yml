@@ -1,0 +1,55 @@
+# 学习资源与技能发展知识库
+- id: "study_001"
+  title: "CS自学入口清单"
+  content: "路径：1) 短教程+GPT扫盲建立全局图谱；2) 立刻跟进小型实战项目增强成就感；3) 再回补系统课程。资源：CS自学指南、Coursera、公开GitHub课程仓库。避免：逐门皓首穷经啃课导致动力受损。"
+  category: "study_resources"
+  tags: ["自学", "课程资源", "GitHub", "Coursera"]
+  keywords: ["CS自学", "课程资源", "GitHub", "Coursera", "学习路径", "实战项目"]
+  metadata:
+    type: "resources"
+    priority: "medium"
+    source: "飞跃手册 25fall-CS-杨柏翰"
+
+- id: "study_002"
+  title: "参考阅读与资料库"
+  content: "推荐：上海交通大学生存手册、CS自学指南、Crash Course Computer Science、计算机程序设计艺术、单向度的人。用途：开阔视野、补全通识与技术史、建立学科脉络。"
+  category: "study_resources"
+  tags: ["参考书目", "学习资料", "通识阅读", "技术史"]
+  keywords: ["参考书目", "学习资料", "SJTU生存手册", "CS自学指南", "技术史"]
+  metadata:
+    type: "resources"
+    priority: "low"
+    source: "飞跃手册 25fall-CS-杨柏翰"
+
+- id: "study_003"
+  title: "开源项目含金量提升"
+  content: "建议：维护真实可用的开源仓库（Star不等于含金量，实质更重要）；产出可服务求实习/保研面试；将成熟项目用于大创/竞赛。起点：MIT Missing Semester课程→工具链/协作能力→逐步搭建项目生态。"
+  category: "skill_development"
+  tags: ["开源", "GitHub", "项目经验", "Missing Semester"]
+  keywords: ["开源项目", "GitHub", "项目经验", "Missing Semester", "实习", "保研"]
+  metadata:
+    type: "guide"
+    priority: "medium"
+    source: "飞跃手册 25fall-CS-杨柏翰"
+
+- id: "study_004"
+  title: "科研产出与展示方式"
+  content: "两类产出：1) 论文/会议投稿（周期长）；2) 可用展示：在Hugging Face等平台搭建在线实验室/演示页面，沉淀数据、模型、交互Demo，便于导师/评委快速理解工作价值。"
+  category: "skill_development"
+  tags: ["科研产出", "HuggingFace", "演示平台", "可视化"]
+  keywords: ["科研产出", "HuggingFace", "演示平台", "论文", "会议", "可视化"]
+  metadata:
+    type: "playbook"
+    priority: "medium"
+    source: "飞跃手册 25fall-CS-杨柏翰"
+
+- id: "study_005"
+  title: "本科四年积累与节奏"
+  content: "日常：完成课程—英语提升—假期科研/实习。长期：LeetCode打基础、每学期系统读一本领域书、关注GitHub Trending。目标：申请季前形成成绩+标化+项目/论文+推荐的闭环证据链。"
+  category: "time_management"
+  tags: ["时间管理", "长期积累", "LeetCode", "申请季"]
+  keywords: ["时间管理", "长期积累", "LeetCode", "申请季", "英语", "科研", "实习"]
+  metadata:
+    type: "timeline"
+    priority: "medium"
+    source: "飞跃手册 25fall-CS-杨柏翰"
