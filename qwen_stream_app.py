@@ -22,6 +22,10 @@ from src.core.rag.qwen_stream_integration import QwenStreamLLM
 # 本地开发时可在shell中执行：export DASHSCOPE_API_KEY=your_key
 # 或在.env文件中设置（需要python-dotenv包）
 
+# 设置API密钥（本地开发用，部署时通过环境变量覆盖）
+if not os.getenv("DASHSCOPE_API_KEY"):
+    os.environ["DASHSCOPE_API_KEY"] = "sk-2ea7b3f8fb7742828ff836eed6050f19"
+
 # 创建应用
 app = FastAPI(
     title="医疗报销智能助手",
