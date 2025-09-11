@@ -22,9 +22,8 @@ from src.core.rag.qwen_stream_integration import QwenStreamLLM
 # 本地开发时可在shell中执行：export DASHSCOPE_API_KEY=your_key
 # 或在.env文件中设置（需要python-dotenv包）
 
-# 设置API密钥（本地开发用，部署时通过环境变量覆盖）
-if not os.getenv("DASHSCOPE_API_KEY"):
-    os.environ["DASHSCOPE_API_KEY"] = "sk-2ea7b3f8fb7742828ff836eed6050f19"
+# API密钥通过环境变量管理（Railway已配置DASHSCOPE_API_KEY）
+# 本地开发时请设置环境变量：export DASHSCOPE_API_KEY=your_key
 
 # 创建应用
 app = FastAPI(
@@ -86,6 +85,59 @@ def record_visit(request: Request, endpoint: str = ""):
     
     # 打印访问日志
     print(f"📊 访问统计: {endpoint} | IP: {client_ip} | 总访问: {access_stats['total_visits']}")
+
+# ==================== 访问控制功能 ====================
+# 访问控制配置
+rate_limit = {
+    "requests": defaultdict(list),  # IP -> [timestamp1, timestamp2, ...]
+    "max_requests_per_minute": 60,  # 每分钟最大请求数
+    "max_requests_per_hour": 1000,  # 每小时最大请求数
+    "blocked_ips": set(),           # 被阻止的IP
+    "whitelist": {                  # IP白名单
+        "127.0.0.1",               # 本地
+        "::1",                     # IPv6本地
+    }
+}
+
+def check_rate_limit(client_ip: str) -> bool:
+    """检查访问频率限制"""
+    global rate_limit
+    
+    # 白名单IP直接通过
+    if client_ip in rate_limit["whitelist"]:
+        return True
+    
+    # 被阻止的IP直接拒绝
+    if client_ip in rate_limit["blocked_ips"]:
+        return False
+    
+    current_time = time.time()
+    
+    # 清理旧的时间戳（超过1小时）
+    rate_limit["requests"][client_ip] = [
+        ts for ts in rate_limit["requests"][client_ip] 
+        if current_time - ts < 3600
+    ]
+    
+    # 检查每小时限制
+    if len(rate_limit["requests"][client_ip]) >= rate_limit["max_requests_per_hour"]:
+        rate_limit["blocked_ips"].add(client_ip)
+        print(f"🚫 IP {client_ip} 因超过每小时限制被阻止")
+        return False
+    
+    # 检查每分钟限制
+    recent_requests = [
+        ts for ts in rate_limit["requests"][client_ip] 
+        if current_time - ts < 60
+    ]
+    
+    if len(recent_requests) >= rate_limit["max_requests_per_minute"]:
+        print(f"⚠️ IP {client_ip} 超过每分钟限制，但未阻止")
+        return True  # 暂时允许，但记录警告
+    
+    # 记录当前请求
+    rate_limit["requests"][client_ip].append(current_time)
+    return True
 
 # 加载知识库
 def load_knowledge_base(file_path: str = "data/knowledge_base.json") -> Dict:
@@ -511,6 +563,16 @@ async def get_stats(request: Request):
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     """WebSocket端点 - 支持流式输出"""
+    # 获取客户端IP
+    client_ip = websocket.client.host
+    if hasattr(websocket, 'headers') and 'x-forwarded-for' in websocket.headers:
+        client_ip = websocket.headers['x-forwarded-for'].split(',')[0].strip()
+    
+    # 检查访问频率限制
+    if not check_rate_limit(client_ip):
+        await websocket.close(code=1008, reason="访问频率过高，请稍后再试")
+        return
+    
     await manager.connect(websocket)
     try:
         while True:
@@ -518,14 +580,32 @@ async def websocket_endpoint(websocket: WebSocket):
             try:
                 data = await websocket.receive_text()
                 request_data = json.loads(data)
-                question = request_data.get("question", "")
+                question = request_data.get("question", "").strip()
                 
+                # 输入验证
                 if not question:
-                    await manager.send_message(json.dumps({
+                    await websocket.send_text(json.dumps({
                         "type": "error",
-                        "content": "问题不能为空"
-                    }), websocket)
+                        "message": "问题不能为空"
+                    }))
                     continue
+                
+                if len(question) > 500:
+                    await websocket.send_text(json.dumps({
+                        "type": "error", 
+                        "message": "问题长度不能超过500字符"
+                    }))
+                    continue
+                
+                # 恶意输入检测
+                dangerous_patterns = ['<script', 'javascript:', 'eval(', 'exec(', 'import os', 'subprocess']
+                if any(pattern in question.lower() for pattern in dangerous_patterns):
+                    await websocket.send_text(json.dumps({
+                        "type": "error",
+                        "message": "输入包含不安全内容，请重新输入"
+                    }))
+                    continue
+                
                 
                 # 发送开始标记
                 await manager.send_message(json.dumps({
