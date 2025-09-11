@@ -55,7 +55,7 @@ python main.py
 
 ### Web界面使用
 
-1. 打开浏览器访问 http://localhost:8080/web
+1. 打开浏览器访问 https://www.bjtuai.cn/web
 2. 在输入框中输入问题，如"感冒药能报销吗？"
 3. 点击发送或按回车键
 4. 查看AI回答和相关信息来源
