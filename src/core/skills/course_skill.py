@@ -182,3 +182,4 @@ class CourseSkill(BaseSkill):
             {"title": "科研指导", "query": "如何开始科研项目？"},
             {"title": "申请材料", "query": "升学申请需要准备哪些材料？"}
         ]
+
