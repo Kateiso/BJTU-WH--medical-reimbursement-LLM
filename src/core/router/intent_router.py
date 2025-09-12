@@ -164,10 +164,10 @@ class IntentRouter:
         best_skill = max(skill_scores.items(), key=lambda x: x[1])
         skill_type, confidence = best_skill
         
-        # 如果最高分太低，标记为未知
-        if confidence < 0.3:
-            skill_type = SkillType.UNKNOWN
-            confidence = 0.0
+        # 如果最高分太低，使用通用对话处理
+        if confidence < 0.1:
+            skill_type = SkillType.GREETING
+            confidence = 0.5
         
         # 提取实体
         entities = self._extract_entities(processed_query)

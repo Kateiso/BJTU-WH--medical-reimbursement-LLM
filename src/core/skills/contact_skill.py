@@ -122,11 +122,11 @@ class ContactSkill(BaseSkill):
             content = result.get('content', '')
             if content:
                 response_parts.append(f"📝 **说明**: {content}")
+                # 在每条信息后显示来源
+                source_info = f"\n📚 *来源: {result.get('title', '知识库')}*"
+                response_parts.append(source_info)
             
-            # 添加标签信息
-            tags = result.get('tags', [])
-            if tags:
-                response_parts.append(f"*标签: {', '.join(tags)}*")
+            # 移除标签显示，改为在每条信息后显示来源
         
         # 添加通用联系信息
         response_parts.append("\n📞 **常用联系方式**")

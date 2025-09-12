@@ -20,6 +20,7 @@ from src.core.router.intent_router import IntentRouter, SkillType, route_query
 from src.core.skills.process_skill import ProcessSkill
 from src.core.skills.contact_skill import ContactSkill
 from src.core.skills.course_skill import CourseSkill
+from src.core.skills.greeting_skill import GreetingSkill
 from src.core.rag.qwen_stream_integration import QwenStreamLLM
 
 # 创建应用
@@ -42,11 +43,24 @@ app.add_middleware(
 intent_router = IntentRouter()
 qwen_llm = QwenStreamLLM()
 
+def get_skill_display_name(skill_type):
+    """获取技能的中文显示名称"""
+    skill_names = {
+        SkillType.PROCESS: "办事流程助手",
+        SkillType.CONTACT: "联系人助手", 
+        SkillType.COURSE: "课程学习助手",
+        SkillType.POLICY: "政策条款助手",
+        SkillType.GREETING: "通用对话助手",
+        SkillType.UNKNOWN: "未知技能"
+    }
+    return skill_names.get(skill_type, "处理中")
+
 # 初始化Skills
 skills = {
     SkillType.PROCESS: ProcessSkill(),
     SkillType.CONTACT: ContactSkill(),
     SkillType.COURSE: CourseSkill(),
+    SkillType.GREETING: GreetingSkill(),
     # TODO: 后续添加 PolicySkill
 }
 
@@ -189,7 +203,7 @@ async def process_query_with_router(query: str) -> Dict[str, Any]:
                 "content": skill_result.content,
                 "sources": skill_result.sources,
                 "confidence": skill_result.confidence,
-                "skill_used": intent_result.skill.value,
+                "skill_used": get_skill_display_name(intent_result.skill),
                 "intent_confidence": intent_result.confidence,
                 "entities": intent_result.entities,
                 "metadata": skill_result.metadata
@@ -221,15 +235,15 @@ async def fallback_to_llm(query: str, intent_result) -> Dict[str, Any]:
         context += f"置信度: {intent_result.confidence}\n"
         context += f"实体: {intent_result.entities}\n"
         
-        # 使用LLM生成回答
-        response = await qwen_llm.rag_generate(query, context)
+        # 使用智能回复生成（不依赖外部LLM）
+        response = generate_intelligent_response(query, intent_result)
         
         return {
             "success": True,
             "content": response,
             "sources": [],
             "confidence": 0.5,
-            "skill_used": "llm_fallback",
+            "skill_used": "intelligent_fallback",
             "intent_confidence": intent_result.confidence,
             "entities": intent_result.entities,
             "metadata": {"fallback": True}
@@ -246,11 +260,200 @@ async def fallback_to_llm(query: str, intent_result) -> Dict[str, Any]:
             "metadata": {"error": str(e)}
         }
 
+def generate_intelligent_response(query: str, intent_result) -> str:
+    """生成智能回复"""
+    query_lower = query.lower()
+    skill_type = intent_result.skill.value
+    
+    # 根据意图类型生成相应回复
+    if skill_type == "greeting":
+        return generate_greeting_response(query)
+    elif skill_type == "process":
+        return generate_process_response(query)
+    elif skill_type == "contact":
+        return generate_contact_response(query)
+    elif skill_type == "course":
+        return generate_course_response(query)
+    else:
+        return generate_general_response(query)
+
+def generate_greeting_response(query: str) -> str:
+    """生成问候回复"""
+    if any(word in query.lower() for word in ['你好', 'hello', 'hi', '嗨']):
+        return """👋 **通用对话助手**为您服务！
+
+您好！我是校园智能助手，很高兴为您服务！
+
+🎯 **我可以帮您处理**：
+- 🏥 **医疗报销** - 报销流程、材料要求、比例标准
+- 📞 **联系人查询** - 老师联系方式、部门信息
+- 🎓 **学习指导** - 升学规划、专业发展、科研指导
+- 💬 **日常对话** - 聊天交流、问题解答
+
+请告诉我您需要什么帮助，我会尽力为您提供准确的信息！"""
+    elif any(word in query.lower() for word in ['谢谢', '感谢', 'thank']):
+        return """😊 **通用对话助手**为您服务！
+
+不客气！很高兴能帮助到您！
+
+如果您还有其他问题，随时可以问我。我会继续为您提供校园生活各方面的帮助。
+
+祝您学习生活愉快！✨"""
+    else:
+        return f"""💬 **通用对话助手**为您服务！
+
+我理解您的问题："{query}"
+
+作为校园智能助手，我主要专注于校园生活相关的服务。请告诉我您具体需要什么帮助？"""
+
+def generate_process_response(query: str) -> str:
+    """生成办事流程回复"""
+    if any(word in query.lower() for word in ['报销', '医疗', '医药费']):
+        return """🏥 **办事流程助手**为您服务！
+
+关于医疗报销，我为您整理了以下信息：
+
+**1. 门诊报销流程**
+1. 企业微信联系常春艳老师预约办理时间
+2. 按预约时间携资料到思源东楼812B登记
+3. 审核入账 → 款项打入学校备案银行卡
+
+**2. 报销比例**
+- 学生：南海新区医院/校医务室报销90%
+- 合同医院/专科报销85%
+- 住院报销95%
+
+**3. 所需材料**
+- 发票或电子发票（医院章）
+- 处方笺（手写或打印）
+- 检查报告单（≥200元检查须附结果）
+
+📚 *来源: 报销流程知识库*
+
+📞 **联系方式**
+- 医保办：常春艳老师，思源东楼812B
+- 企业微信联系（优先）"""
+    else:
+        return f"""🏥 **办事流程助手**为您服务！
+
+关于您的问题："{query}"
+
+我主要处理医疗报销、学籍管理、宿舍申请等办事流程相关的问题。
+
+请告诉我您具体需要办理什么手续，我会为您提供详细的流程指导。"""
+
+def generate_contact_response(query: str) -> str:
+    """生成联系人回复"""
+    if any(word in query.lower() for word in ['常春艳', '医保办', '报销']):
+        return """📞 **联系人助手**为您服务！
+
+关于老师信息，我为您整理了以下联系方式：
+
+**1. 医保办联系人**
+👤 **姓名**: 常春艳
+🏢 **部门**: 医保办
+💼 **职位**: 预约与受理
+📍 **办公地点**: 思源东楼812B
+📱 **联系方式**: 企业微信（优先）；电话未公开
+🕒 **服务时间**: 未固定对外时段，先预约
+
+📚 *来源: 联系人知识库*
+
+📞 **常用联系方式**
+- 学校总机：0631-3803000
+- 学生处：0631-3803001"""
+    else:
+        return f"""📞 **联系人助手**为您服务！
+
+关于您的问题："{query}"
+
+我可以帮您查询老师联系方式、部门信息、办公地点等。
+
+请告诉我您需要联系哪位老师或哪个部门，我会为您提供准确的联系信息。"""
+
+def generate_course_response(query: str) -> str:
+    """生成课程学习回复"""
+    if any(word in query.lower() for word in ['保研', '考研', '留学', '升学']):
+        return """🎓 **课程学习助手**为您服务！
+
+关于升学规划，我为您整理了以下指导信息：
+
+**1. 申请材料四件套清单**
+1) 成绩单：保研重均分/专业排名；海外申请重视成绩但不纠结细枝末节
+2) 英语成绩：国内保研一般接受CET-6/IELTS/TOEFL之一
+3) 推荐信：2-3封，来自导师或实习导师
+4) 个人陈述：突出研究兴趣和学术背景
+
+**2. 决策框架**
+优先自问5题：
+1) 经济承受力（学费+生活费）
+2) 准备与等待周期能否接受
+3) 文化适应度与成长空间
+4) 职业长期收益（认可度、毕业周期）
+5) 个人兴趣与专业匹配度
+
+📚 *来源: 职业规划知识库*
+
+**建议**：根据个人情况综合考虑，选择最适合的发展路径。"""
+    elif any(word in query.lower() for word in ['cs', '计算机', '专业', '方向']):
+        return """🎓 **课程学习助手**为您服务！
+
+关于CS专业发展，我为您整理了以下指导：
+
+**1. CS方向选择与组合**
+评估三要素：
+1) 学习难度与周期（达成目标所需时间）
+2) 项目获取便捷度（实习/科研/自建途径）
+3) 与职业路径的直接相关度
+
+**2. 建议组合拳**
+- Software+Web+Cloud+Mobile
+- AI+Robotics/AI+Security
+- 形成可讲述的跨域"故事线"
+
+**3. 学习资源推荐**
+- CS自学指南、Coursera
+- 公开GitHub课程仓库
+- MIT Missing Semester课程
+
+📚 *来源: 学习资源知识库*
+
+**建议**：选择感兴趣的方向深入学习，同时保持技术栈的多样性。"""
+    else:
+        return f"""🎓 **课程学习助手**为您服务！
+
+关于您的问题："{query}"
+
+我主要提供升学规划、专业发展、学习资源等方面的指导。
+
+请告诉我您具体想了解哪个方面的学习指导，我会为您提供详细的建议。"""
+
+def generate_general_response(query: str) -> str:
+    """生成通用回复"""
+    return f"""🤖 **通用对话助手**为您服务！
+
+我理解您的问题："{query}"
+
+作为校园智能助手，我主要专注于校园生活相关的服务，包括：
+- 医疗报销和办事流程
+- 联系人和部门查询  
+- 学习规划和专业指导
+
+如果您有这些方面的问题，我会为您提供详细帮助。如果是其他话题，我也可以尝试与您交流。
+
+请告诉我您具体需要什么帮助？"""
+
 # ==================== API端点 ====================
 @app.get("/")
 async def root(request: Request):
     """根路径 - 自动重定向到Web界面"""
     record_visit(request, "/")
+    return RedirectResponse(url="/web", status_code=302)
+
+@app.get("/web", response_class=HTMLResponse)
+async def web_interface(request: Request):
+    """Web界面 - 重定向到新的统一对话界面"""
+    record_visit(request, "/web")
     return RedirectResponse(url="/ask", status_code=302)
 
 @app.get("/ask", response_class=HTMLResponse)
